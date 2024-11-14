@@ -8,17 +8,10 @@ let data = try DataFrame(contentsOfCSVFile: fileURL)
 
 let (trainingData, testingData) = data.stratifiedSplit(on: "class", by: 0.8)
 
-let parameters = MLTextClassifier.ModelParameters(
-    validation: .split(strategy: .automatic),
-    algorithm: .transferLearning(.bertEmbedding, revision: 1),
-    language: .english
-)
-
 let sentimentClassifier = try MLTextClassifier(
     trainingData: trainingData,
     textColumn: "text",
-    labelColumn: "class",
-    parameters: parameters
+    labelColumn: "class"
 )
 
 let trainingAccuracy = (1.0 - sentimentClassifier.trainingMetrics.classificationError) * 100
