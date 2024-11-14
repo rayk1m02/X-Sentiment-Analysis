@@ -1,0 +1,37 @@
+import Cocoa
+import CreateML
+import TabularData
+
+let fileURL = URL(fileURLWithPath: "/Users/raymondkim/Desktop/Stuff/Career/Projects/iOS & Swift/Twittermenti/labelled-apple-reviews.csv")
+
+do {
+    
+    let data = try DataFrame(contentsOfCSVFile: fileURL)
+    
+    let (trainingData, testingData) = data.stratifiedSplit(on: "text", by: 0.8)
+    
+    let sentimentClassifier = try MLTextClassifier(
+        trainingData: trainingData,
+        textColumn: "text",
+        labelColumn: "class"
+    )
+    
+    let trainingAccuracy = (1.0 - sentimentClassifier.trainingMetrics.classificationError) * 100
+    
+    let validationAccuracy = (1.0 - sentimentClassifier.validationMetrics.classificationError) * 100
+    
+    let evaluationMetrics = sentimentClassifier.evaluation(on: testingData, textColumn: "text", labelColumn: "class")
+    
+    let evaluationAccuracy = (1.0 - evaluationMetrics.classificationError) * 100
+    
+    let metadata = MLModelMetadata(author: "Ray Kim", shortDescription: "A model trained to classify sentiment on Tweets", version: "1.0")
+    
+    try sentimentClassifier.write(to: URL(fileURLWithPath: "/Users/raymondkim/Desktop/Stuff/Career/Projects/iOS & Swift/Twittermenti/TweetSentimentClassifier.mlmodel"))
+    
+    try sentimentClassifier.prediction(from: "@Apple is a terrible company")
+    try sentimentClassifier.prediction(from: "I just found the best restaraunt ever @WaffleHouse")
+    try sentimentClassifier.prediction(from: "I think @Coke is okay")
+    
+} catch {
+    print("Error: \(error)")
+}
